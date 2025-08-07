@@ -1,1 +1,4 @@
 .env
+
+
+DATABASE_URL=
