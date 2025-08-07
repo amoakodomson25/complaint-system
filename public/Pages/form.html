@@ -214,7 +214,7 @@
                     let response; // ✅ Declare it here
 
                     try {
-                        response = await fetch('http://localhost:3000/api/complaints/submit', {
+                        response = await fetch('/api/complaints/submit', {
                             method: 'POST',
                             body: formData
                         });
