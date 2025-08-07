@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CSS/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Ga-East News</title>
+</head>
+
+<body class="bg-white text-gray-800">
+  <header class="bg-white shadow fixed w-full top-0 left-0 z-50">
+  <div class="container mx-auto flex justify-between items-center px-6 py-4">
+    <!-- Logo -->
+    <div class="text-2xl font-bold text-black-600">
+      OpenDistrict
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex space-x-8 items-center">
+      <a href="/index.html" class="text-gray-800 hover:text-red-600 font-medium">Home</a>
+      
+      <!-- News Dropdown -->
+      <div class="relative group">
+        <button class="text-gray-800 hover:text-red-600 font-medium focus:outline-none">
+          News
+          <i class="fas fa-chevron-down ml-1 text-xs"></i>
+        </button>
+        <div class="absolute right-0 mt-2 w-60 bg-white border border-gray-200 rounded shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition duration-200">
+          <a href="./Pages/ga-west news.html" class="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600">Ga-West Municipal News</a>
+          <a href="./Pages/ga-east news.html" class="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600">Ga-East Municipal News</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+
+  <main class="pt-28 max-w-6xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Logo -->
+    <div class="flex justify-start">
+      <img src="/images/ga eastlogo.png" alt="GA West Municipal Assembly Logo" class="w-48 h-auto p-2 rounded" />
+    </div>
+
+    <!-- Hero Banner -->
+    <div class="relative">
+      <img src="/images/ghana.jpg" alt="Hero Banner" class="w-full h-72 object-cover" />
+      <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+        <h1 class="text-white text-3xl sm:text-4xl font-bold text-center">GA-WEST MUNICIPAL NEWS</h1>
+      </div>
+    </div>
+
+    <!-- Text Block -->
+    <div class="bg-gray-50 p-6 rounded">
+      <p class="text-gray-800 mb-4">
+        The Ga East Municipal is one of the 261 Metropolitan, Municipal and District Assemblies (MMDAs) in Ghana, and forms part of the 29 MMDAs in the Greater Accra Region
+      </p>
+      <p class="text-gray-800 mb-4">
+       The Ga East Municipal Assembly is located at the northern part of Greater Accra Region. The Administrative capital of the Municipality is <strong>Abokobi</strong>.
+      </p>
+      <p class="text-gray-800 mb-4">
+        The Municipality shares boundaries with the Ga West Municipal to the west, the La Kwantanang Municipal to the east, Accra Metropolitan to the south and the Akwapim South District to the north
+      </p>
+      <p class="text-gray-800">
+        The population of the Municipality according to 2021 population and housing census stands at <strong>283,379 </strong> with <strong>140,015 males</strong> and <strong>143,364 females</strong>.
+      </p>
+    </div>
+
+    <!-- News Carousel -->
+    <div class="flex justify-center items-center space-x-4">
+      
+      <!-- Left arrow -->
+    <button class="text-gray-600 hover:text-gray-800 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-8 sm:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+    </button>
+
+
+      <div class="flex space-x-6 overflow-x-auto py-4">
+        <div class="flex-shrink-0 w-64">
+          <img src="/images/people.jpeg" alt="News Image" class="w-full h-40 object-cover rounded-t" />
+          <div class="bg-gray-100 p-2 text-sm font-medium text-gray-800">President Mahsma blah blah</div>
+        </div>
+        <div class="flex-shrink-0 w-64">
+          <img src="/images/news2.jpg" alt="News Image" class="w-full h-40 object-cover rounded-t" />
+          <div class="bg-gray-100 p-2 text-sm font-medium text-gray-800">President Mahsma blah blah</div>
+        </div>
+        <div class="flex-shrink-0 w-64">
+          <img src="/images/news3.jpg" alt="News Image" class="w-full h-40 object-cover rounded-t" />
+          <div class="bg-gray-100 p-2 text-sm font-medium text-gray-800">President Mahsma blah blah</div>
+        </div>
+      </div>
+
+      <!-- Right arrow -->
+    <button class="text-gray-600 hover:text-gray-800 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-8 sm:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+    </button>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-black text-gray-300 mt-12">
+    <div class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <h3 class="text-white text-lg font-bold mb-2">OpenDistrict</h3>
+        <p class="text-sm">
+          Mapping and reporting street problems to the districts responsible for fixing them anywhere in Ghana.
+        </p>
+      </div>
+      <div class="flex flex-col sm:items-end space-y-2 sm:space-y-0 sm:space-x-4 sm:flex-row mt-4 sm:mt-0 text-sm">
+        <a href="#" class="hover:text-white">Contact</a>
+        <a href="#" class="hover:text-white">Privacy Policy</a>
+        <a href="#" class="hover:text-white">Terms of Services</a>
+      </div>
+    </div>
+    <div class="text-center text-gray-400 text-xs mt-4 pb-4">
+      OpenDistrict &copy;2025
+    </div>
+  </footer>
+
+</body>
+</html>

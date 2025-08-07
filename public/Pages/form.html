@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <!-- Add Font Awesome CDN (optional) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <script defer>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('file-upload');
+            const previewContainer = document.getElementById('image-preview');
+            const form = document.getElementById('complaint-form');
+            const successBox = document.getElementById('success-box');
+
+            const nameInput = document.getElementById('name');
+            const contactInput = document.getElementById('contact');
+            const messageInput = document.getElementById('message');
+            const districtInput = document.getElementById('district');
+            const locationInput = document.getElementById('location');
+            const complaintType = document.getElementById('complaint-type');
+
+            const districtError = document.getElementById('district-error');
+            const locationError = document.getElementById('location-error');
+            const nameError = document.getElementById('name-error');
+            const contactError = document.getElementById('contact-error');
+            const messageError = document.getElementById('message-error');
+            const complaintTypeError = document.getElementById('complaint-type-error');
+
+
+            const recordBtn = document.getElementById('record-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const audioPlayback = document.getElementById('audio-playback');
+            const audioBlobInput = document.getElementById('audio-blob');
+
+            let mediaRecorder;
+            let audioChunks = [];
+
+            // Image preview
+            fileInput.addEventListener('change', () => {
+                previewContainer.innerHTML = '';
+                Array.from(fileInput.files).forEach(file => {
+                    if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'w-20 h-20 object-cover rounded mr-2 mb-2';
+                            previewContainer.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+
+            // Voice recorder start
+            recordBtn.addEventListener('click', async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioURL = URL.createObjectURL(audioBlob);
+
+                        // Playback
+                        audioPlayback.src = audioURL;
+                        audioPlayback.classList.remove('hidden');
+
+                        // Convert to base64 and store in hidden input
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        reader.onloadend = () => {
+                            audioBlobInput.value = reader.result;
+                        };
+                    };
+
+                    mediaRecorder.start();
+                    recordBtn.classList.add('hidden');
+                    stopBtn.classList.remove('hidden');
+                } catch (err) {
+                    alert('Microphone access denied or not supported.');
+                    console.error(err);
+                }
+            });
+
+            // Voice recorder stop
+            stopBtn.addEventListener('click', () => {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                    recordBtn.classList.remove('hidden');
+                    stopBtn.classList.add('hidden');
+                }
+            });
+
+            // Form submission and validation
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+
+                // Reset errors
+                nameError.classList.add('hidden');
+                contactError.classList.add('hidden');
+                messageError.classList.add('hidden');
+                complaintTypeError.classList.add('hidden');
+
+                let valid = true;
+
+                // Name validation
+                if (nameInput.value.trim() === '') {
+                    nameError.textContent = "Name is required.";
+                    nameError.classList.remove('hidden');
+                    valid = false;
+                }
+
+                // Contact validation
+                const contact = contactInput.value.trim();
+                const isEmail = contact.includes('@');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const phoneRegex = /^0\d{9}$/;
+
+                if (contact === '') {
+                    contactError.textContent = "Contact information is required.";
+                    contactError.classList.remove('hidden');
+                    valid = false;
+                } 
+                else if (!phoneRegex.test(contact)) {
+                    contactError.textContent = "Please enter a valid 10-digit phone number starting with 0.";
+                    contactError.classList.remove('hidden');
+                    valid = false;
+                }
+
+                // Message or voice note validation
+                const hasMessage = messageInput.value.trim() !== '';
+                const hasVoice = audioBlobInput.value.trim() !== '';
+
+                if (!hasMessage && !hasVoice) {
+                    messageError.textContent = "Please provide either a written complaint or a voice note.";
+                    messageError.classList.remove('hidden');
+                    valid = false;
+                }
+
+                // Image file size check
+                const files = Array.from(fileInput.files);
+                for (const file of files) {
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(`File "${file.name}" is larger than 5MB.`);
+                        valid = false;
+                        break;
+                    }
+                }
+
+
+                // Complaint Type validation
+                if (complaintType.value === '') {
+                    complaintTypeError.textContent = "Please select a complaint type.";
+                    complaintTypeError.classList.remove('hidden');
+                    valid = false;
+                }
+
+
+                // District validation
+                if (districtInput.value === '') {
+                    districtError.textContent = "Please select a district.";
+                    districtError.classList.remove('hidden');
+                    valid = false;
+                }
+                
+                // Location validation
+                if (locationInput.value === '') {
+                    locationError.textContent = "Please select a location.";
+                    locationError.classList.remove('hidden');
+                    valid = false;
+                }
+
+                // Show success if valid
+                if (valid) {
+                    const formData = new FormData();
+                    formData.append('name', nameInput.value.trim());
+                    formData.append('contact', contactInput.value.trim());
+                    formData.append('district', districtInput.value.trim());
+                    formData.append('location', locationInput.value.trim());
+                    formData.append('complaint_type', complaintType.value);
+                    formData.append('description', messageInput.value.trim());
+
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        formData.append('images', fileInput.files[i]);
+                    }
+                    const audioDataUrl = audioBlobInput.value;
+                    if (audioDataUrl) {
+                        const byteString = atob(audioDataUrl.split(',')[1]);
+                        const mimeString = audioDataUrl.split(',')[0].split(':')[1].split(';')[0];
+
+                        const ab = new ArrayBuffer(byteString.length);
+                        const ia = new Uint8Array(ab);
+                        for (let i = 0; i < byteString.length; i++) {
+                        ia[i] = byteString.charCodeAt(i);
+                        }
+
+                        const audioFile = new File([ab], 'voice-note.webm', { type: mimeString });
+                        formData.append('audio', audioFile);
+                    }
+
+
+                    let response; // ✅ Declare it here
+
+                    try {
+                        response = await fetch('http://localhost:3000/api/complaints/submit', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const contentType = response.headers.get('content-type') || '';
+                        if (!response.ok || !contentType.includes('application/json')) {
+                            const text = await response.text();
+                            throw new Error(`Unexpectsed response: ${text}`);
+                        }
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            const successBox = document.getElementById('success-box');
+                            const loader = document.getElementById('loadingModal');
+                            const complaintIdEl = document.getElementById('complaint-id');
+                            complaintIdEl.textContent = result.complaintId;
+
+                            loader.classList.remove('hidden');
+
+                            setTimeout(() => {
+                                successBox.classList.remove('hidden');
+                                loader.classList.add('hidden');
+                                successBox.scrollIntoView({ behavior: 'smooth' });
+
+                                setTimeout(() => {
+                                    window.location.href = '../index.html';
+                                }, 3000);
+                            }, 2000);
+
+                            form.reset();
+                            previewContainer.innerHTML = '';
+                            audioPlayback.classList.add('hidden');
+                            audioBlobInput.value = '';
+                        } else {
+                            successBox.textContent = '⚠️ Something went wrong while submitting.';
+                            successBox.classList.remove('hidden');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        successBox.textContent = '⚠️ Failed to submit complaint. Check your connection.';
+                        successBox.classList.remove('hidden');
+                        setTimeout(() => {
+                            successBox.classList.add('hidden');
+                        }, 3000);
+                    }
+                }
+            });
+        });
+    </script>
+    <title>OpenDistrict - Complaint Submission</title>
+</head>
+
+<body class="min-h-screen bg-blue-100 flex flex-col">
+    <header class="bg-white shadow fixed w-full top-0 left-0 z-50">
+        <div class="container mx-auto flex justify-between items-center px-6 py-4">
+            <!-- Logo -->
+            <div class="text-2xl font-bold text-black-600">
+            OpenDistrict
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex space-x-8 items-center">
+            <a href="/index.html" class="text-gray-800 hover:text-red-600 font-medium">Home</a>
+            
+            <!-- News Dropdown -->
+            <div class="relative group">
+                <button class="text-gray-800 hover:text-red-600 font-medium focus:outline-none">
+                News
+                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                </button>
+                <div class="absolute right-0 mt-2 w-60 bg-white border border-gray-200 rounded shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition duration-200">
+                <a href="/Pages/ga-west news.html" class="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600">Ga-West Municipal News</a>
+                <a href="/Pages/ga-east news.html" class="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600">Ga-East Municipal News</a>
+                </div>
+            </div>
+            </nav>
+        </div>
+    </header>
+
+<div class="min-h-screen flex justify-center items-center px-4 py-12">
+  <div class="w-full max-w-3xl border border-gray-300 rounded-lg bg-white shadow-lg overflow-hidden">
+    <!-- Dark Blue Header -->
+    <div class="bg-gray-900 text-white px-6 py-4 text-lg font-semibold">
+    </div>
+
+    <div class="p-6 space-y-6">
+      <!-- Instructions Box -->
+      <div class="border border-gray-300 rounded p-4 bg-white text-gray-900">
+        <p class="text-gray-900 font-bold mb-2">
+          Read the following instructions before filling up the form:
+        </p>
+        <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
+          <li>Fill in all the fields</li>
+          <li>The maximum file size allowed for upload is 5MB</li>
+          <li>Once the form is submitted, an email confirmation or SMS will be sent to you</li>
+          <li>
+            <span class="text-red-600 font-semibold">
+              Resolution time varies depending on the type of complaint
+            </span>
+          </li>
+        </ul>
+      </div>
+
+
+        <!-- Form starts here -->
+        <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl shadow-2xl p-4 sm:p-6 w-full space-y-6">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-center">Submit a Complaint</h2>
+
+
+
+            <!-- Form Start -->
+            <form id="complaint-form" class="space-y-5" enctype="multipart/form-data">
+                <!-- Name -->
+                <div>
+                    <label for="name" class="block mb-1 text-sm font-semibold">Your Name</label>
+                    <input type="text" id="name" placeholder="John Doe"
+                        class="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400" />
+                    <p id="name-error" class="hidden text-sm text-red-500 mt-1">Name is required.</p>
+                </div>
+
+                <!-- Email or Telephone -->
+                <div>
+                    <label for="contact" class="block mb-1 text-sm font-semibold">Phone</label>
+                    <input type="text" id="contact" placeholder="0243000000"
+                        class="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400" />
+                    <p id="contact-error" class="hidden text-sm text-red-500 mt-1">Contact information is required.</p>
+                </div>
+
+
+                <!-- District/Location (Auto-filled) -->
+                <div>
+                    <label for="district" class="block mb-1 text-sm font-semibold">District</label>
+                    <input type="text" id="district" readonly
+                    class="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="Loading district..." />
+                </div>
+                
+                <div class="mt-4">
+                    <label for="location" class="block mb-1 text-sm font-semibold">Location</label>
+                    <input type="text" id="location" readonly
+                    class="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="Loading location..." />
+                </div>
+    
+
+            
+                <!-- Complaint Type Select Field -->
+                <div>
+                    <label for="complaint-type" class="block mb-1 text-sm font-semibold">Complaint Type</label>
+                    <select id="complaint-type"
+                        disabled class="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
+                        <option value="">Select Complaint Type</option>
+                        <option value="rubbish">Waste Management / Rubbish Dumping</option>
+                        <option value="drainage">Choked gutter/ Poor Drainage</option>
+                        <option value="streetlight">Street Lighting / Traffic lights Faults</option>
+                        <option value="road">Road and Pothole Complaints</option>
+                    </select>
+                    <p id="complaint-type-error" class="hidden text-sm text-red-500 mt-1">Please select a complaint type.
+                    </p>
+                </div>
+
+
+                <!-- Complaint -->
+                <div>
+                    <label for="message" class="block mb-1 text-sm font-semibold">Your Complaint</label>
+                    <textarea id="message" rows="4" placeholder="Leave your complaint here..."
+                        class="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 resize-none focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"></textarea>
+                </div>
+
+                <!-- Voice Recorder -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Voice Complaint</label>
+                    <div class="flex items-center gap-4">
+                        <!-- Start Recording Button with Icon -->
+                        <button type="button" id="record-btn"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                            <i class="fas fa-microphone-alt"></i>
+                        </button>
+
+                        <!-- Stop Recording Button with Icon -->
+                        <button type="button" id="stop-btn"
+                            class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg hidden flex items-center gap-2">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+
+                    <!-- Audio playback controls -->
+                    <audio id="audio-playback" controls class="w-full mt-2 hidden"></audio>
+
+                    <!-- Hidden input to store audio blob -->
+                    <input type="hidden" id="audio-blob" name="audio" />
+
+                    <p id="message-error" class="hidden text-sm text-red-500 mt-1">Complaint message is required.</p>
+
+                </div>
+                
+                <!-- File Upload -->
+                <div>
+                    <label for="file-upload" class="block mb-1 text-sm font-semibold">Attach Pictures (optional)</label>
+                    <input 
+                        type="file" 
+                        id="file-upload" 
+                        accept="image/*" 
+                        capture="environment" 
+                        multiple
+                        class="w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" 
+                    />
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Upload or take multiple PNG, JPG or JPEG files (Max: 5MB each).
+                </p>
+                <div id="image-preview" class="flex flex-wrap mt-3"></div>
+            </div>
+
+
+                    <!-- Submit Button -->
+                    <div class="text-center pt-4">
+                        <button type="submit"
+                          id="submitBtn"
+                          class="flex items-center justify-center gap-2 w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-4 focus:ring-purple-300 dark:focus:ring-purple-800">
+                          
+                          <span id="btnText">Submit Complaint</span>
+                          <span id="spinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        </button>
+                      </div>
+                </form>
+        </div>
+    </div>
+
+    <!--For complaint-type-->
+    <script> 
+        document.addEventListener("DOMContentLoaded", function () {
+          const storedValue = localStorage.getItem("selectedComplaintType");
+      
+          if (storedValue) {
+            const select = document.getElementById("complaint-type");
+            select.value = storedValue;
+      
+            // Optionally clear storage after setting
+            localStorage.removeItem("selectedComplaintType");
+          }
+        });
+      </script>
+    <!--For district-->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const districtInput = document.getElementById("district");
+      const locationInput = document.getElementById("location");
+  
+      // Get from localStorage
+      const savedDistrict = localStorage.getItem("selectedDistrict");
+      const savedLocation = localStorage.getItem("selectedLocation");
+  
+      // Display saved values
+      if (savedDistrict) {
+        districtInput.value = savedDistrict.charAt(0).toUpperCase() + savedDistrict.slice(1);
+      } else {
+        districtInput.value = "Not selected";
+      }
+  
+      if (savedLocation) {
+        locationInput.value = savedLocation
+          .split(" ")
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+      } else {
+        locationInput.value = "Not selected";
+      }
+    });
+    </script>
+
+<div class="modal hidden" id="loadingModal">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading...</div>
+    </div>
+  </div>
+
+<!-- Fullscreen success overlay -->
+<div id="success-box"
+     class="hidden fixed inset-0 bg-bg flex items-center justify-center z-50 transition-opacity duration-300">
+  <div class="text-center text-white px-6 py-10 rounded-lg shadow-xl bg-green-900 bg-opacity-95 max-w-md w-full">
+    <h2 class="text-2xl font-bold mb-2">✅ Complaint Submitted</h2>
+    <p class="text-lg font-medium" id="success-message">Thank you! Your complaint ID is <span id="complaint-id"></span>.</p>
+  </div>
+</div>
+
+</body>
+
+
+</html>

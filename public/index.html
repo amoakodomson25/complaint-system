@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CSS/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>OpenDistrict</title> 
+    
+    <style>
+      /* Fade-in for background */
+      .fade-in-background {
+          animation: fadeIn 2s ease-in forwards;
+      }
+
+      @keyframes fadeIn {
+          from {
+              opacity: 0;
+          }
+
+          to {
+              opacity: 1;
+          }
+      }
+
+      /* Slide effect for the next section */
+      .section {
+          opacity: 0;
+          transform: translateY(30px); /* Initial position */
+          transition: transform 1s ease-out, opacity 1s ease-out;
+      }
+
+      .section.visible {
+          opacity: 1;
+          transform: translateY(0); /* Moves up when visible */
+      }
+</style>
+
+</head>
+
+<body>
+  <header class="bg-white shadow fixed w-full top-0 left-0 z-50">
+  <div class="container mx-auto flex justify-between items-center px-6 py-4">
+    <!-- Logo -->
+    <div class="text-2xl font-bold text-black-600">
+      OpenDistrict
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex space-x-8 items-center">
+      <a href="index.html" class="text-gray-800 hover:text-red-600 font-medium">Home</a>
+      
+      <!-- News Dropdown -->
+      <div class="relative group">
+        <button class="text-gray-800 hover:text-red-600 font-medium focus:outline-none">
+          News
+          <i class="fas fa-chevron-down ml-1 text-xs"></i>
+        </button>
+        <div class="absolute right-0 mt-2 w-60 bg-white border border-gray-200 rounded shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition duration-200">
+          <a href="Pages/ga-east news.html" class="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600">Ga-West Municipal News</a>
+          <a href="Pages/ga-west news.html" class="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600">Ga-East Municipal News</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+  <div class="h-screen w-full flex items-center justify-center text-white fade-in-background" style="background-image: url('images/1.jpg'); background-size: cover; background-position: center;">
+    <div class="text-center max-w-2xl">
+            <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-white md:text-5xl lg:text-6xl">
+                Welcome to OpenDistrict
+            </h1>
+            <p class="mb-6">
+                An easy-to-use platform for submitting complaints to your district authorities and getting timely responses. 
+                Select your district to get started.
+            </p>
+            <a href="Pages/choosedistrict.html">
+                <button type="button"
+                    class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                    Submit A Complaint
+                </button>
+            </a>
+        </div>
+    </div>
+  </div>
+
+  <!-- Next Section (will slide up when scrolled into view) -->
+  <div class="section bg-white-500 h-screen flex justify-center items-center text-white" id="nextSection">
+    <section class="bg-white py-16 px-6 text-gray-800">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-6">Why OpenDistrict Matters</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 class="text-xl font-semibold">Empowers Citizens</h3>
+            <p>Report issues from anywhere, anytime.Your voice matters.</p>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold">Faster Responses</h3>
+            <p>Skip long queues and paperwork. Get help quickly and track updates.</p>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold">Improves Governance</h3>
+            <p>Authorities see what citizens need most and can respond efficiently.</p>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold">Safe & Secure</h3>
+            <p>Submit complaints. Your information is protected.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+</div>
+<div class="bg-gray-100 py-12">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
+
+    <div class="space-y-4">
+
+      <div class="border rounded-lg p-4 bg-white shadow">
+        <button onclick="toggleAnswer(0)" class="w-full text-left flex justify-between items-center font-semibold text-lg">
+          Is my information safe on OpenDistrict?
+          <span id="icon0">+</span>
+        </button>
+        <p id="answer0" class="mt-2 text-gray-600 hidden">Yes, we prioritize your privacy and use secure encryption to protect your data.</p>
+      </div>
+
+  
+      <div class="border rounded-lg p-4 bg-white shadow">
+        <button onclick="toggleAnswer(1)" class="w-full text-left flex justify-between items-center font-semibold text-lg">
+          How long does it take to resolve a complaint?
+          <span id="icon1">+</span>
+        </button>
+        <p id="answer1" class="mt-2 text-gray-600 hidden">Response times vary depending on the type of complaint and district workload. You will be notified when your complaint is sent.</p>
+      </div>
+
+      
+      <div class="border rounded-lg p-4 bg-white shadow">
+        <button onclick="toggleAnswer(2)" class="w-full text-left flex justify-between items-center font-semibold text-lg">
+          How do I report an issue?
+          <span id="icon2">+</span>
+        </button>
+        <p id="answer2" class="mt-2 text-gray-600 hidden">Click on “Submit a Complaint” and fill in the form with the issue details, location, and any supporting images.</p>
+      </div>
+
+    </div>
+  </div>
+  </div>
+ 
+<footer class="text-center py-4 text-sm text-gray-600">
+  &copy; 2025 OpenDistrict
+</footer>
+
+
+
+  <script>
+    // Detect when the next section is scrolled into view
+    window.addEventListener("scroll", function () {
+        let section = document.getElementById("nextSection");
+        let rect = section.getBoundingClientRect();
+        let windowHeight = window.innerHeight;
+
+        // If the top of the section is within the visible viewport
+        if (rect.top <= windowHeight && rect.bottom >= 0) {
+            section.classList.add("visible");
+        }
+    });
+</script>  
+
+ <script>
+    function toggleAnswer(index) {
+      const answer = document.getElementById(`answer${index}`);
+      const icon = document.getElementById(`icon${index}`);
+      const isVisible = answer.classList.contains("hidden");
+
+      document.querySelectorAll("p[id^='answer']").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll("span[id^='icon']").forEach(el => el.textContent = "+");
+
+      if (isVisible) {
+        answer.classList.remove("hidden");
+        icon.textContent = "−";
+      }
+    }
+  </script>   
+    
+</body>
+
+</html>

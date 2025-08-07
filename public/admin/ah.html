@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8">
+  <title>Dark Mode Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="bg-white text-black dark:bg-gray-900 dark:text-white min-h-screen p-6">
+
+  <h1 class="text-2xl mb-4">Toggle Dark Mode</h1>
+
+  <label class="flex items-center space-x-3">
+    <span>Dark Mode</span>
+    <input type="checkbox" id="darkModeSwitch" class="w-6 h-6" />
+  </label>
+
+  <script>
+    const darkModeSwitch = document.getElementById('darkModeSwitch');
+    const rootElement = document.documentElement;
+
+    // Load saved theme
+    if (localStorage.getItem('theme') === 'dark') {
+      rootElement.classList.add('dark');
+      darkModeSwitch.checked = true;
+    }
+
+    // Toggle theme
+    darkModeSwitch.addEventListener('change', function () {
+      if (this.checked) {
+        rootElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        rootElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  </script>
+</body>
+</html>

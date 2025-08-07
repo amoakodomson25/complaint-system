@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+      body {
+        font-family: "Montserrat", sans-serif;      
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <title>Admin Complaints Portal</title> 
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const name = localStorage.getItem('adminName');
+        const district = localStorage.getItem('adminDistrict');
+    
+        if (!name || !district) {
+          localStorage.clear();
+          window.location.href = '../admin-login.html';
+        }
+      });
+    </script>
+    
+
+</head>
+
+<div class="bg-gray-100 dark:bg-gray-900 dark:text-white ">
+<div class="flex min-h-screen">
+    <!-- Sidebar --> 
+    <div class="w-64 h-screen bg-gray-900 text-white dark:border-r dark:border-gray-700 p-4 flex flex-col">
+      <h4 class="text-xl font-bold mb-4">OpenDistrict</h4>
+      <hr class="border-gray-700 mb-4" />
+      
+      <nav class="flex flex-col space-y-2 flex-grow">
+        <a href="#" onclick="navigateWithParams('dashboard.html')" class="hover:bg-gray-700 px-3 py-2 rounded text-gray-300">Dashboard</a>
+        <a href="#" onclick="navigateWithParams('ofcomplaints.html')"  class="bg-gray-700 px-3 py-2 rounded text-white" >Complaints</a>
+      </nav>
+    
+      <!-- Dark Mode Toggle Switch at the bottom -->
+      <div class="mt-auto pt-6">
+        <div class="flex items-center justify-between px-3 text-sm font-medium text-white">
+          <p>Dark Mode</p>
+          
+          <label class="relative flex items-center cursor-pointer w-12 h-6">
+            <!-- The peer checkbox -->
+            <input type="checkbox" id="darkModeSwitch" class="sr-only peer" />
+          
+            <!-- The background track -->
+            <div class="w-full h-full bg-gray-400 rounded-full peer-checked:bg-sky-600 transition-colors duration-300"></div>
+          
+            <!-- The knob (sibling of the .peer input) -->
+            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 transform peer-checked:translate-x-6"></div>
+          </label>
+          
+          
+        </div>
+      </div>
+    </div>
+
+     <!-- Main Content -->
+    <div class="flex-grow bg-gray-100 dark:bg-gray-950" >
+
+      <nav class="bg-sky-600 text-white dark:border-r dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+        <div class="text-lg font-semibold">Complaints - <span id="district-name"></span> District</div>   
+        <div class="flex items-center gap-6">
+          <!-- User Initial with Dropdown -->
+          <div class="relative">
+            <!-- Profile Button -->
+            <button id="profileButton" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center font-semibold text-black focus:outline-none"></button>
+            <!-- Dropdown Menu -->
+            <div id="profileDropdown" class="absolute right-0 top-full mt-2 w-64 bg-gray-800 shadow-lg rounded-md z-50 hidden">
+              <div class="p-4 border-b">
+                <div class="flex items-center space-x-3">
+                  <div id="initials" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center font-semibold text-black"></div>
+                  <div>
+                    <p class="font-semibold text-sm text-white" id="profile-name"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-3 text-sm text-white space-y-2">
+                <a href="#" onclick="logout()" class="block text-red-500 hover:text-red-700 font-semibold">Log Out</a>    
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+
+      <div class="flex flex-row justify-between items-start p-6 ">        
+        <!-- Search & Filter Hover Icon -->
+        <div class="relative group inline-block ml-0 mr-10 ">
+          <!-- Trigger Icon -->
+          <div class="mx-1 px-4 py-2 rounded border border-gray-300 bg-gray-200 dark:bg-gray-700 ">
+            <p><i class="fas fa-search"></i> Search and Filter</p>
+          </div>
+
+          <!-- Search & Filter Panel (Hidden by default) -->
+          <div class="absolute z-20 mt-1 left-0 w-80 bg-white border border-gray-300 dark:border-gray-600 dark:bg-gray-800  rounded-lg shadow-md opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-300 p-4 space-y-4">
+            <div><h2>Search</h2></div>
+
+            <!-- Search Input -->
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-950"></i>
+              </div>
+              <input
+                type="text"
+                id="search-complaint"
+                placeholder="By name, location"
+                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 dark:text-black dark:border-gray-600"
+              />
+            </div>
+            <hr>
+
+            <div><i class="fas fa-filter text-gray-400"></i> Filter By </div>
+            <!-- Filter by Status -->
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-white  mb-2">Status</p>
+              <div class="space-y-1 text-gray-700 dark:text-white">
+                <label class="flex items-center text-sm">
+                  <input type="checkbox" name="status" value="pending" class="mr-2 text-sky-600 focus:ring-sky-500" />
+                  Pending
+                </label>
+                <label class="flex items-center text-sm ">
+                  <input type="checkbox" name="status" value="solved" class="mr-2 text-sky-600 focus:ring-sky-500" />
+                  Resolved
+                </label>
+              </div>
+            </div>
+
+            <!-- Filter by Complaint Type -->
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-white mb-2">Complaint Type</p>
+              <div class="space-y-1">
+                <label class="flex items-center text-sm ">
+                  <input type="checkbox" name="type" value="road" class="mr-2 text-sky-600 focus:ring-sky-500" />
+                  Road
+                </label>
+                <label class="flex items-center text-sm ">
+                  <input type="checkbox" name="type" value="drainage" class="mr-2 text-sky-600 focus:ring-sky-500" />
+                  Drainage
+                </label>
+                <label class="flex items-center text-sm ">
+                  <input type="checkbox" name="type" value="rubbish" class="mr-2 text-sky-600 focus:ring-sky-500" />
+                  Rubbish
+                </label>
+                <label class="flex items-center text-sm ">
+                  <input type="checkbox" name="type" value="streetlight" class="mr-2 text-sky-600 focus:ring-sky-500" />
+                  Streetlight
+                </label>
+              </div>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-white mb-2"><i class="fa-solid fa-sort text-gray-400"></i> Sort by</p>
+              <div class="space-y-1">
+                <label class="flex items-center text-sm ">
+                  <input type="checkbox" name="sort" value="date" class="mr-2 text-sky-600 focus:ring-sky-500" />
+                  Date
+                </label>
+              </div>
+            </div>
+
+            <!-- Apply Filter Button -->
+            <div class="pt-2">
+              <button
+                onclick="applySearch()"
+                class="w-full bg-sky-600 text-white py-2 px-4 rounded-md text-sm hover:bg-sky-700 transition"
+              >
+                Apply Search & Filter
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Pagination -->
+        <div id="pagination" class="flex flex-wrap justify-center"></div>
+      </div>
+
+      <table class="min-w-full table-auto border border-gray-200 dark:border-0 mb-8">
+        <thead class="bg-gray-100 dark:bg-gray-950 text-gray-600 dark:text-white">
+          <tr class="text-left text-sm font-medium">
+            <th class="px-4 py-3 border-b dark:border-0">#</th>
+            <th class="px-4 py-3 border-b dark:border-0">Date</th>
+            <th class="px-4 py-3 border-b dark:border-0">Name</th>
+            <th class="px-4 py-3 border-b dark:border-0">Location</th>
+            <th class="px-2 py-3 border-b dark:border-0">Complaint type</th>
+            <th class="px-4 py-3 border-b dark:border-0">Status</th>
+            <th class="px-4 py-3 border-b dark:border-0">Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="complaintBody" class="text-sm text-gray-700 dark:text-white">
+          <tr id="loader" class="hidden">
+            <td colspan="7" class="text-center py-4">
+              <div class="flex justify-center items-center space-x-2">
+                <div class="w-4 h-4 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-gray-600 dark:text-gray-300 text-sm">Loading complaints...</span>
+              </div>
+            </td>
+          </tr>
+          <tr id="noResultsMessage" class="text-center text-gray-500 mt-4 hidden">
+            <td colspan="7" class="py-4">No complaints found.</td>
+          </tr>
+        </tbody>
+
+          <tbody id="loaderContainer">
+            
+          </tbody>
+      </table>
+    </div>
+
+    <div id="modalBackdrop" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50" onclick="closeModal2()">
+      <div id="modalCard"
+            class="bg-white dark:bg-gray-950 dark:border dark:border-gray-700 text-gray-700 dark:text-white w-full max-w-2xl rounded-2xl shadow-2xl p-8 relative max-h-[90vh] overflow-y-auto"
+            onclick="event.stopPropagation()">
+
+        <!-- Close Button -->
+        <button onclick="closeModal2()"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Modal Header -->
+        <h2 class="text-3xl font-bold  mb-6 border-b pb-3 flex items-center gap-2">
+          <i class="fas fa-exclamation-circle text-sky-600"></i>
+          Complaint Details
+        </h2>
+
+        <!-- Info Fields -->
+        <div class="space-y-4  text-base">
+          <!-- Name -->
+          <div class="flex items-center gap-2">
+            <i class="fas fa-user text-sky-600 w-5"></i>
+            <span class="font-semibold" >Name: </span>
+            <span id="modalName" class=" text-gray-900 dark:text-white">Amoako</span>
+          </div>
+
+          <!-- Phone -->
+          <div class="flex items-center gap-2">
+            <i class="fas fa-phone text-sky-600 w-5"></i>
+            <span class="font-semibold" >Phone: </span>
+            <span id="modalContact" class="text-gray-900 dark:text-white">0552003913</span>
+          </div>
+
+          <!-- Location -->
+          <div class="flex items-center gap-2">
+            <i class="fas fa-map-marker-alt text-sky-600 w-5"></i>
+            <span class="font-semibold">Location: </span>
+            <span id="modalLocation" class="text-gray-900 dark:text-white">Accra</span>
+          </div>
+
+          <!-- Complaint Type -->
+          <div class="flex items-center gap-2">
+            <i class="fas fa-tools text-sky-600 w-5"></i>
+            <span class="font-semibold">Complaint Type: </span>
+            <span id="modalType" class=" text-gray-900 dark:text-white">Water Leakage</span>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <i class="fas fa-align-left text-sky-600 w-5"></i>
+              <span class="font-semibold">Description</span>
+            </div>
+            <p id="modalDescription" class=" text-gray-800 bg-gray-100 dark:bg-gray-800 dark:text-white rounded-lg p-3">
+              Water leaking continuously from the main pipe near my house.
+            </p>
+          </div>
+          <!-- Audio Section -->
+          <div class="mt-6">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fas fa-microphone text-sky-600 w-5"></i>
+              <span class="font-semibold">Voice Note</span>
+            </div>
+            <div>
+              <audio id="modalAudio" controls class="w-full rounded">
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          </div>
+
+            <!-- Images Section -->
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="fas fa-image text-sky-600 w-5"></i>
+                  <span class="font-semibold">Images</span>
+                </div>
+                <div id="modalImages" class="flex gap-3 overflow-x-auto">
+                <!-- Images will be injected here -->
+                </div>
+              </div>
+            </div>
+
+
+        <!-- Modal Footer Buttons -->
+        <div class="mt-8 flex justify-end space-x-4">
+          <button id="resolveButton" class="px-5 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg focus:outline-none focus:ring-4 focus:ring-sky-300 flex items-center gap-2">
+            <i class="fas fa-check-circle"></i> Resolve Complaint
+          </button>
+  
+          <button onclick="closeModal2()"
+                  class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-gray-200 flex items-center gap-2">
+            <i class="fas fa-times-circle"></i> Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightboxModal"
+        class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center">
+
+      <!-- Previous Button -->
+      <button onclick="prevImage()"
+        class="absolute top-1/2 left-8 transform -translate-y-1/2 text-white text-3xl bg-black bg-opacity-50 px-2 py-2 rounded-full hover:bg-opacity-80">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <!-- Image -->
+      <img id="lightboxImage" class="max-h-[80vh] max-w-[80vw] rounded-lg shadow-lg" onclick="event.stopPropagation()" />
+
+      <!-- Next Button -->
+      <button onclick="nextImage()"
+        class="absolute top-1/2 right-8 transform -translate-y-1/2 text-white text-3xl bg-black bg-opacity-50 px-2 py-2 rounded-full hover:bg-opacity-80">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <!-- Close Button -->
+      <button onclick="closeLightbox()"
+        class="absolute top-4 right-4 text-white text-xl bg-black bg-opacity-50 px-2 py-1 rounded-full hover:bg-opacity-80">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Confirmation Modal -->
+  <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white dark:bg-slate-500 p-6 rounded shadow-lg text-center">
+      <p class="mb-4 text-lg dark:text-white">Are you sure you want to log out?</p>
+      <button onclick="performLogout()" class="bg-red-600 text-white px-6 py-2 rounded mr-4">Yes</button>
+      <button onclick="closeModal()" class="bg-gray-400 px-4 py-2 rounded">Cancel</button>
+    </div>
+  </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+      <div class="loader ease-linear rounded-full border-4 border-t-4 border-white h-12 w-12 animate-spin"></div>
+    </div>
+
+    <!-- Spinner Styles -->
+    <style>
+      .loader {
+        border-top-color: #4F46E5; /* Indigo-600 */
+      }
+    </style>
+      
+
+
+
+
+  <script>
+    const checkbox = document.getElementById('darkModeSwitch');
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+      checkbox.checked = true;
+    }
+
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }});
+  </script>
+
+<script>
+  const profileButton = document.getElementById("profileButton");
+  const profileDropdown = document.getElementById("profileDropdown");
+
+  profileButton.addEventListener("click", () => {
+    profileDropdown.classList.toggle("hidden");
+  });
+
+  // Optional: Hide dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!profileButton.contains(e.target) && !profileDropdown.contains(e.target)) {
+      profileDropdown.classList.add("hidden");
+    }
+  });
+</script>
+
+<script>
+function openComplaintForm(data) {
+  // Show modal
+  document.getElementById('modalBackdrop').classList.remove('hidden');
+
+  // Fill form fields
+  document.getElementById('name').value = data.name || '';
+  document.getElementById('contact').value = data.contact || '';
+  document.getElementById('district').value = data.district || '';
+  document.getElementById('location').value = data.location || '';
+  document.getElementById('complaint-type').value = data.type || '';
+  document.getElementById('message').value = data.message || '';
+
+  // Make form readonly
+  document.getElementById('name').readOnly = true;
+  document.getElementById('contact').readOnly = true;
+  document.getElementById('district').readOnly = true;
+  document.getElementById('location').readOnly = true;
+  document.getElementById('complaint-type').disabled = true;
+  document.getElementById('message').readOnly = true;
+  document.getElementById('file-upload').disabled = true;
+
+  // Hide submit button
+  document.getElementById('submit-button').style.display = 'none';
+
+  // Handle audio playback
+  const audio = document.getElementById('audio-playback');
+  if (data.audioUrl) {
+    audio.src = data.audioUrl;
+    audio.classList.remove('hidden');
+  } else {
+    audio.classList.add('hidden');
+  }
+
+  // Handle images
+  const previewContainer = document.getElementById('image-preview');
+  previewContainer.innerHTML = '';
+  if (data.images && data.images.length > 0) {
+    data.images.forEach(url => {
+      const img = document.createElement('img');
+      img.src = url;
+      img.className = 'w-24 h-24 object-cover rounded mr-2 mb-2 border border-gray-300';
+      previewContainer.appendChild(img);
+    });
+  }
+}
+
+</script>
+
+<script>
+  function closeModal2() {
+    document.getElementById('modalBackdrop').classList.add('hidden');
+    console.log('Modal closed');
+  }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const name = localStorage.getItem('adminName');
+    const district = localStorage.getItem('adminDistrict');
+
+    if (name) {
+      document.getElementById('profile-name').textContent = name;
+
+      const initials = name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .slice(0, 2);
+
+      document.getElementById('initials').textContent = initials;
+      document.getElementById('profileButton').textContent = initials;
+        
+    }
+    if (district) {
+      document.getElementById('district-name').textContent = district;
+    }
+    
+  });
+</script>
+
+<script>
+  function navigateWithParams(page) {
+    const district = localStorage.getItem('adminDistrict');
+    const name = localStorage.getItem('adminName');
+
+    if (district && name) {
+      // Navigate without putting data in the URL
+      window.location.href = page;
+    } else {
+      // Optionally handle missing data
+      console.warn('Missing admin data. Redirecting to login.');
+      window.location.href = 'admin-login.html'; // or any fallback
+    }
+  }
+</script>
+
+<script>
+  const itemsPerPage = 10;
+  let currentPage = 1;
+  let allComplaints = [];
+
+  
+  function showLoader() {
+    document.getElementById('loader').classList.remove('hidden');
+  }
+
+  function hideLoader() {
+    document.getElementById('loader').classList.add('hidden');
+  }
+
+
+
+  async function loadComplaints() {
+    showLoader();
+    const district = localStorage.getItem('adminDistrict');
+    const endpoint = district
+      ? `/api/complaints/all?district=${encodeURIComponent(district)}`
+      : '/api/complaints/all';
+
+    try {
+      const response = await fetch(endpoint);
+      allComplaints = await response.json();
+      currentPage = 1;
+
+      setTimeout(() => {
+      renderTable();
+      renderPagination();
+      hideLoader();
+    }, 500);
+    } catch (err) {
+      console.error('Failed to load complaints:', err);
+    } 
+  }
+
+  async function applySearch() {
+    const tbody = document.getElementById('complaintBody');
+    const loaderRow = document.getElementById('loader');
+    const noResultsMessage = document.getElementById('noResultsMessage');
+
+    Array.from(tbody.children).forEach(child => {
+      if (child !== loaderRow && child !== noResultsMessage) {
+        tbody.removeChild(child);
+      }
+    });
+
+
+
+    
+    showLoader();
+    
+    const searchQuery = document.getElementById('search-complaint').value.toLowerCase().trim();
+    const statusFilters = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(cb => cb.value);
+    const typeFilters = Array.from(document.querySelectorAll('input[name="type"]:checked')).map(cb => cb.value);
+    const sortByDate = document.querySelector('input[name="sort"][value="date"]')?.checked;
+
+    const district = localStorage.getItem('adminDistrict');
+    const endpoint = district
+      ? `/api/complaints/all?district=${encodeURIComponent(district)}`
+      : '/api/complaints/all';
+
+    try {
+      const response = await fetch(endpoint);
+      const data = await response.json();
+
+      setTimeout(() => {
+
+      // Filter data
+      let filtered = data.filter(item => {
+        const nameMatch = item.name.toLowerCase().includes(searchQuery);
+        const locationMatch = item.location.toLowerCase().includes(searchQuery);
+        const matchesSearch = !searchQuery || nameMatch || locationMatch;
+
+        const matchesStatus = statusFilters.length === 0 || statusFilters.includes(item.status);
+        const matchesType = typeFilters.length === 0 || typeFilters.includes(item.complaint_type);
+
+        return matchesSearch && matchesStatus && matchesType;
+      });
+
+
+      if (sortByDate) {
+        filtered.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+      }
+
+      allComplaints = filtered;
+      currentPage = 1;
+      
+
+      renderTable();
+      renderPagination();
+      hideLoader();
+    }, 500);
+    } catch (err) {
+      console.error('Error applying filters:', err);
+      hideLoader();
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('complaintBody');
+    const loaderRow = document.getElementById('loader');
+    const noResultsMessage = document.getElementById('noResultsMessage');
+    const paginationContainer = document.getElementById('pagination');
+
+    Array.from(tbody.children).forEach(child => {
+      if (child !== loaderRow && child !== noResultsMessage) {
+        tbody.removeChild(child);
+      }
+    });
+
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = allComplaints.slice(start, end);
+    
+    if (allComplaints.length === 0) {
+      noResultsMessage.classList.remove('hidden');
+      paginationContainer.classList.add('hidden');
+      return;
+    } else {
+      noResultsMessage.classList.add('hidden');
+      paginationContainer.classList.remove('hidden');
+    }
+    pageItems.forEach((item, index) => {
+      const row = document.createElement('tr');
+      row.classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-900');
+      row.innerHTML = `
+        <td class="px-4 py-3 border-b dark:border-0 font-medium">${start + index + 1}</td>  
+        <td class="px-4 py-3 border-b dark:border-0">${
+          item.submitted_at
+            ? new Date(item.submitted_at.replace(' ', 'T').split('.')[0]).toLocaleDateString()
+            : 'Unknown'
+        }</td>      
+        <td class="px-4 py-3 border-b dark:border-0">${
+          item.name
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+        }</td>
+        <td class="px-4 py-3 border-b dark:border-0">${item.location.replace(/\b\w/g, c => c.toUpperCase())}</td>
+        <td class="px-4 py-3 border-b dark:border-0">${item.complaint_type.replace(/\b\w/g, c => c.toUpperCase())}</td>
+        <td class="px-4 py-3 border-b dark:border-0">
+          <span class="px-2 py-1 rounded-full text-xs font-semibold ${
+            item.status === 'solved'
+              ? 'bg-green-200 text-green-700 dark:bg-green-800 dark:text-green-200'
+              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-200'
+          }">
+            ${item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Pending'}
+          </span>
+        </td>
+        <td class="px-4 py-3 border-b dark:border-0">
+          <button
+            class="text-white bg-sky-600 hover:bg-sky-700 px-3 py-1 rounded text-xs"
+            onclick='openComplaintForm(${JSON.stringify(item).replace(/'/g, "&apos;")})'
+          >
+            View
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function renderPagination() {
+  const paginationContainer = document.getElementById('pagination');
+  paginationContainer.innerHTML = '';
+
+  const totalPages = Math.ceil(allComplaints.length / itemsPerPage);
+  if (totalPages <= 1) return;
+
+  const createPageButton = (text, page, isActive = false, disabled = false) => {
+    const btn = document.createElement('button');
+    btn.innerHTML = text;
+    btn.disabled = disabled;
+    btn.className = `mx-1 px-3 py-2 rounded text-sm border ${
+      isActive
+        ? 'bg-sky-500 text-white border-sky-500'
+        : 'bg-gray-200 dark:bg-gray-700 text-black dark:text-white border-gray-300'
+    }`;
+    btn.onclick = () => {
+      currentPage = page;
+      renderTable();
+      renderPagination();
+    };
+    return btn;
+  };
+
+  // Prev Button
+  paginationContainer.appendChild(
+    createPageButton('<i class="fas fa-chevron-left"></i>', currentPage - 1, false, currentPage === 1)
+  );
+
+  const range = 0; // how many pages before and after current
+  const pages = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 || // first page
+      i === totalPages || // last page
+      (i >= currentPage - range && i <= currentPage + range)
+    ) {
+      pages.push(i);
+    } else if (
+      i === currentPage - range - 1 ||
+      i === currentPage + range + 1
+    ) {
+      pages.push('...');
+    }
+  }
+
+  let lastPage = 0;
+  pages.forEach(p => {
+    if (p === '...') {
+      const dots = document.createElement('span');
+      dots.textContent = '...';
+      dots.className = 'mx-1 text-gray-500 border border-gray-300 px-3 py-2 rounded text-sm';
+      paginationContainer.appendChild(dots);
+    } else {
+      paginationContainer.appendChild(createPageButton(p, p, p === currentPage));
+    }
+    lastPage = p;
+  });
+
+  // Next Button
+  paginationContainer.appendChild(
+    createPageButton('<i class="fas fa-chevron-right"></i>', currentPage + 1, false, currentPage === totalPages)
+  );
+}
+
+  window.addEventListener('DOMContentLoaded', loadComplaints);
+</script>
+
+<script>
+  function openComplaintForm(item) {
+    // Fill modal fields
+    document.getElementById('modalName').textContent = capitalizeWords(item.name);
+    document.getElementById('modalContact').textContent = item.contact;
+    document.getElementById('modalLocation').textContent = item.location || 'N/A';
+    document.getElementById('modalType').textContent = capitalizeWords(item.complaint_type);
+    document.getElementById('modalDescription').textContent = item.description || 'No description provided';
+    const audioEl = document.getElementById('modalAudio');
+    const audioWrapper = audioEl.parentElement;
+
+    if (item.audio_url) {
+      audioEl.src = `${item.audio_url}`;
+      audioWrapper.style.display = 'block';
+
+      // Remove any previous "No voicenote" message
+      const noAudioMsg = audioWrapper.querySelector('.no-voicenote');
+      if (noAudioMsg) noAudioMsg.remove();
+      } else {
+        audioEl.src = '';
+        audioEl.style.display = 'none'; // hide the audio element itself
+
+        // Show message if not already shown
+        if (!audioWrapper.querySelector('.no-voicenote')) {
+          const message = document.createElement('p');
+          message.textContent = 'No voicenote provided.';
+          message.className = 'no-voicenote text-gray-500';
+          audioWrapper.appendChild(message);
+        }
+
+      audioWrapper.style.display = 'block'; // show wrapper for the message
+    }
+    // Load images
+    const imageContainer = document.getElementById('modalImages');
+    imageContainer.innerHTML = '';
+    let images = item.image_url;
+    let imageList = [];
+    try {
+      if (typeof item.image_url === 'string') {
+        if (item.image_url.trim().startsWith('[')) {
+          imageList = JSON.parse(item.image_url);
+        } else {
+          imageList = item.image_url.split(',').map(url => url.trim());
+        }
+      } else if (Array.isArray(item.image_url)) {
+        imageList = item.image_url.map(url => url.trim());
+      }
+    } catch (e) {
+      console.error('Error parsing image_url:', e);
+      imageList = [];
+    }
+
+ 
+    imageList = imageList.filter(url => url && url.trim() !== '');
+    if (imageList.length > 0) {
+      imageList.forEach((url, index) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = `Image ${index + 1}`;
+        img.className = 'h-32 rounded-lg border border-gray-200 hover:scale-105 transition-transform cursor-pointer';
+
+        img.onclick = () => openLightbox(index, imageList);
+
+
+        img.onerror = () => {
+          console.error(`Failed to load image: ${url}`);
+        };
+
+        imageContainer.appendChild(img);
+      });
+    } else {
+      imageContainer.innerHTML = '<p class="text-gray-500">No images provided.</p>';
+    }
+    document.getElementById('modalBackdrop').classList.remove('hidden');
+    const resolveButton = document.getElementById('resolveButton');
+      if (item.status === 'pending') {
+        resolveButton.classList.remove('hidden');
+        resolveButton.onclick = async () => {
+          const confirmed = confirm("Are you sure you want to mark this complaint as resolved?");
+          if (!confirmed) return;
+
+          try {
+            const response = await fetch('/api/complaints/resolve', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ id: item.id })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+              alert('Complaint resolved successfully!');
+              document.getElementById('modalBackdrop').classList.add('hidden');
+              location.reload();
+            } else {
+              alert('Failed to resolve complaint: ' + (data.error || 'Unknown error'));
+            }
+          } catch (err) {
+            console.error('Error resolving complaint:', err);
+            alert('An error occurred while resolving the complaint.');
+          }
+        };
+      } else {
+        resolveButton.classList.add('hidden');
+    }
+  }
+ 
+  function closeModal(event) {
+    if (event && event.target.id !== 'modalBackdrop') return;
+    document.getElementById('modalBackdrop').classList.add('hidden');
+  }
+
+  function capitalizeWords(text) {
+    return text
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  let currentImageIndex = 0;
+  let currentImageList = [];
+
+  function openLightbox(index, imageList) {
+    currentImageIndex = index;
+    currentImageList = imageList;
+    const lightboxModal = document.getElementById('lightboxModal');
+    const lightboxImage = document.getElementById('lightboxImage');
+    
+    lightboxImage.src = currentImageList[currentImageIndex];
+    lightboxModal.classList.remove('hidden');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightboxModal').classList.add('hidden');
+  }
+
+  function prevImage() {
+    if (currentImageList.length === 0) return;
+    currentImageIndex = (currentImageIndex - 1 + currentImageList.length) % currentImageList.length;
+    document.getElementById('lightboxImage').src = currentImageList[currentImageIndex];
+  }
+
+  function nextImage() {
+    if (currentImageList.length === 0) return;
+    currentImageIndex = (currentImageIndex + 1) % currentImageList.length;
+    document.getElementById('lightboxImage').src = currentImageList[currentImageIndex];
+  }
+  
+</script>
+
+<script>
+  const darkModeSwitch = document.getElementById('darkModeSwitch');
+  const rootElement = document.documentElement;
+  // Load saved preference
+  if (localStorage.getItem('theme') === 'dark') {
+    rootElement.classList.add('dark');
+    darkModeSwitch.checked = true;
+  }
+
+  // Toggle on change
+  darkModeSwitch.addEventListener('change', function () {
+    if (this.checked) {
+      rootElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      rootElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  });
+
+</script>
+
+<script>
+  function logout() {
+    document.getElementById('logoutModal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('logoutModal').classList.add('hidden');
+  }
+
+  function performLogout() {
+    // Hide modal and show loading spinner
+    closeModal();
+    document.getElementById('loadingOverlay').classList.remove('hidden');
+
+    // Simulate logout delay
+    setTimeout(() => {
+      // Clear admin data
+      localStorage.removeItem('adminName');
+      localStorage.removeItem('adminDistrict');
+
+      // Redirect to login page
+      window.location.href = '../admin-login.html';
+    }, 2000); // 2 seconds delay
+  }
+</script>
+
+<script>
+  async function resolveComplaint(complaintId) {
+    try {
+      const response = await fetch('/api/complaints/resolve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: complaintId })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Complaint resolved successfully!');
+        // Optional: Refresh or update the UI dynamically
+        location.reload(); // or update status on the page directly
+      } else {
+        alert('Failed to resolve complaint: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Resolve error:', error);
+      alert('An error occurred while resolving the complaint.');
+    }
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>
